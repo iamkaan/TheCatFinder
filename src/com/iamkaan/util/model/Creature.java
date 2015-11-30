@@ -8,6 +8,7 @@ import com.iamkaan.listener.StationVisitListener;
 public abstract class Creature {
     public int id;
     public int currentStationNumber;
+    public boolean found;
 
     StationVisitListener listener;
 
@@ -15,7 +16,8 @@ public abstract class Creature {
         this.id = id;
         this.currentStationNumber = currentStationNumber;
         this.listener = listener;
+        found = false;
     }
 
-    public abstract void goToNextStation();
+    public abstract void visitNextStation();
 }

@@ -3,6 +3,7 @@ package com.iamkaan.util.model;
 import com.iamkaan.listener.StationVisitListener;
 import com.iamkaan.util.StationManager;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -12,33 +13,27 @@ import java.util.List;
  */
 public class Cat extends Creature {
 
-    public int id;
-    public boolean isFound;
-
     public Cat(int id, int currentStationNumber, StationVisitListener listener) {
         super(id, currentStationNumber, listener);
 
         this.currentStationNumber = currentStationNumber;
         this.listener = listener;
-
-        isFound = false;
-
-        listener.onVisit(currentStationNumber, this);
     }
 
+    /**
+     * creates a list of possible next stations and randomly chooses between the ones which is not closed
+     */
     @Override
-    public void goToNextStation() {
-        List<Object> choices = Arrays.asList(
-                new HashMap<Integer, Station>(StationManager.getStation(currentStationNumber).connections)
-                        .values().toArray());
+    public void visitNextStation() {
+        List<Object> choices = new ArrayList<Object>(Arrays.asList(
+                new HashMap<Integer, Station>(StationManager.getManager().getStation(currentStationNumber).connections)
+                        .values().toArray()));
         while (choices.size() > 0) {
             int random = (int) (Math.random() * choices.size());
             if (((Station) choices.get(random)).isClosed) {
                 choices.remove(random);
             } else {
-                if (!isFound) {
-                    listener.onVisit(((Station) choices.get(random)).number, this);
-                }
+                listener.onVisit(((Station) choices.get(random)).number, this);
                 return;
             }
         }

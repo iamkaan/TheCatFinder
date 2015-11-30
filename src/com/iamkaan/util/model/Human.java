@@ -1,8 +1,10 @@
 package com.iamkaan.util.model;
 
+import com.iamkaan.TheCatFinder;
 import com.iamkaan.listener.StationVisitListener;
 import com.iamkaan.util.StationManager;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -12,25 +14,33 @@ public class Human extends Creature {
 
     //holds <station number, number of visits>
     HashMap<Integer, Integer> visitedStations;
+    public int visitedStationCount;
+    public boolean gotTrapped = false;
 
     public Human(int id, int currentStationNumber, StationVisitListener listener) {
         super(id, currentStationNumber, listener);
 
         this.currentStationNumber = currentStationNumber;
         this.listener = listener;
+        visitedStationCount = 1;
 
         visitedStations = new HashMap<Integer, Integer>();
         visitedStations.put(currentStationNumber, 1);
-
-        listener.onVisit(currentStationNumber, this);
     }
 
+    /**
+     * checks all possible connections for the next station and chooses the least visited one
+     * if there is no connection available, prints the information that owner got trapped.
+     */
     @Override
-    public void goToNextStation() {
+    public void visitNextStation() {
+        visitedStationCount++;
+
         int leastVisitedStationNumber = -1;
         int lowestVisitCount = -1;
 
-        for (Station connection : StationManager.getStation(currentStationNumber).connections.values()) {
+        Collection<Station> connections = StationManager.getManager().getStation(currentStationNumber).connections.values();
+        for (Station connection : connections) {
             if (connection.isClosed) {
                 continue;
             }
@@ -50,7 +60,21 @@ public class Human extends Creature {
             visitedStations.put(leastVisitedStationNumber, ++lowestVisitCount);
             listener.onVisit(leastVisitedStationNumber, this);
         } else {
-            //nowhere to go!
+            gotTrapped = true;
+            System.out.println("Owner " + id + " got trapped in " +
+                    StationManager.getManager().stations.get(currentStationNumber).name);
         }
+    }
+
+    /**
+     * check if the owner reached the give up limit (number of stations visited in total)
+     *
+     * @return true if the owner gave up
+     */
+    public boolean giveUp() {
+        if (TheCatFinder.GIVE_UP_LIMIT == -1) {
+            return false;
+        }
+        return visitedStationCount >= TheCatFinder.GIVE_UP_LIMIT;
     }
 }
